@@ -5,7 +5,7 @@ const gallery = document.querySelector('.gallery');
 let lightbox = new SimpleLightbox('.gallery a');
 
 export function renderImages(images) {
-  gallery.innerHTML = images
+  const markup = images
     .map(
       ({
         webformatURL,
@@ -16,13 +16,15 @@ export function renderImages(images) {
         comments,
         downloads,
       }) => `
-            <a href="${largeImageURL}" class="gallery-item">
-                <img src="${webformatURL}" alt="${tags}" loading="lazy" />
-                <div class="info">
-                    <p>❤️ ${likes}  👁 ${views}  💬 ${comments}  ⬇️ ${downloads}</p>
-                </div>
-            </a>`
+        <a href="${largeImageURL}" class="gallery-item">
+            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+            <div class="info">
+                <p>❤️ ${likes}  👁 ${views}  💬 ${comments}  ⬇️ ${downloads}</p>
+            </div>
+        </a>`
     )
     .join('');
+
+  gallery.insertAdjacentHTML('beforeend', markup);
   lightbox.refresh();
 }
