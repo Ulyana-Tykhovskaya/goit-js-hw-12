@@ -26,5 +26,5 @@ export function renderImages(images) {
     .join('');
 
   gallery.insertAdjacentHTML('beforeend', markup);
-  lightbox.refresh();
+  lightbox.refresh(); // Обновляем SimpleLightbox
 }

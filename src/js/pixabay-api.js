@@ -17,7 +17,7 @@ export async function fetchImages(query, page = 1, per_page = 40) {
       },
     });
 
-    console.log('API Response:', response.data);
+    console.log('API Response:', response.data); // Лог API для отладки
     return response.data;
   } catch (error) {
     console.error('Ошибка запроса:', error);

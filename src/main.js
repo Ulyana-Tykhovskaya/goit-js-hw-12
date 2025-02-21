@@ -1,5 +1,7 @@
 import { fetchImages } from './js/pixabay-api.js';
 import { renderImages } from './js/render-functions.js';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
@@ -7,20 +9,23 @@ const form = document.querySelector('#search-form');
 const loader = document.querySelector('#loader');
 const gallery = document.querySelector('.gallery');
 const fetchPostsBtn = document.querySelector('.btn');
+const inputEl = form.querySelector('input');
 
 let page = 1;
 const per_page = 40;
 let searchQuery = '';
-fetchPostsBtn.style.display = 'none';
 
-fetchPostsBtn.addEventListener('click', async () => {
-  page += 1;
-  await loadImages();
+fetchPostsBtn.style.display = 'none';
+loader.style.display = 'none';
+
+const lightbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  captionDelay: 250,
 });
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
-  searchQuery = event.target.elements.searchQuery.value.trim();
+  searchQuery = inputEl.value.trim();
 
   if (!searchQuery) {
     iziToast.warning({ title: 'Ошибка', message: 'Введите поисковый запрос!' });
@@ -32,13 +37,19 @@ form.addEventListener('submit', async event => {
   fetchPostsBtn.style.display = 'none';
   loader.style.display = 'block';
 
-  await loadImages();
+  await loadImages(false);
 });
 
-async function loadImages() {
+fetchPostsBtn.addEventListener('click', async () => {
+  page += 1;
+  loader.style.display = 'block';
+  await loadImages(true);
+});
+
+// ✅ Фикс скрытия лоадера и показа кнопки
+async function loadImages(shouldScroll) {
   try {
     const data = await fetchImages(searchQuery, page, per_page);
-    loader.style.display = 'none';
 
     if (!data.hits || data.hits.length === 0) {
       iziToast.error({
@@ -50,7 +61,11 @@ async function loadImages() {
     }
 
     renderImages(data.hits);
-    scrollPage();
+    lightbox.refresh();
+
+    if (shouldScroll) {
+      scrollPage();
+    }
 
     if (page * per_page >= data.totalHits) {
       fetchPostsBtn.style.display = 'none';
@@ -62,14 +77,15 @@ async function loadImages() {
       fetchPostsBtn.style.display = 'block';
     }
   } catch (error) {
-    loader.style.display = 'none';
+    console.error('Ошибка при загрузке изображений:', error);
     iziToast.error({
       title: 'Ошибка',
       message: 'Не удалось загрузить больше изображений',
     });
+  } finally {
+    loader.style.display = 'none';
   }
 }
-
 function scrollPage() {
   const galleryItems = document.querySelectorAll('.gallery-item');
   if (galleryItems.length > 0) {
